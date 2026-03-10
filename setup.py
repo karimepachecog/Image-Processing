@@ -1,18 +1,27 @@
-# setup.py
-from setuptools import setup
+from setuptools import setup, Extension
 from Cython.Build import cythonize
 import numpy as np
-import glob
 
-# Usamos glob para encontrar automáticamente todos los archivos .pyx 
-# dentro de cualquier subcarpeta de 'src' (gaussian, sobel, median)
-archivos_cython = glob.glob("src/*/*.pyx")
+# Definimos las extensiones incluyendo 'src.' en el nombre del módulo
+# para que se guarden en la carpeta correcta de tus compañeros.
+extensions = [
+    Extension(
+        "src.gaussian.gaussian_cython", 
+        ["src/gaussian/gaussian_cython.pyx"],
+        include_dirs=[np.get_include()]
+    ),
+    Extension(
+        "src.median.median_filter_cython", 
+        ["src/median/median_filter_cython.pyx"],
+        include_dirs=[np.get_include()]
+    ),
+    Extension(
+        "src.sobel.sobel_cython", 
+        ["src/sobel/sobel_cython.pyx"],
+        include_dirs=[np.get_include()]
+    ),
+]
 
 setup(
-    name="Filtros de Procesamiento de Imagenes",
-    ext_modules=cythonize(
-        archivos_cython,
-        compiler_directives={'language_level': "3"} # Le decimos que use la sintaxis de Python 3
-    ),
-    include_dirs=[np.get_include()] 
+    ext_modules=cythonize(extensions),
 )

@@ -23,6 +23,7 @@ def main():
     
     try:
         img_gris = load_image(input_path)
+        img_gris = img_gris.astype("float64")
         print(f"--- Procesando imagen: {nombre_imagen} ({img_gris.shape}) ---\n")
     except Exception as e:
         print(e)
@@ -35,7 +36,7 @@ def main():
     res_gauss_py = medir_tiempo(gaussian_filter_pure_python, img_list, "Pure Python")
     res_gauss_np = medir_tiempo(gaussian_filter_numpy, img_gris, "NumPy")
     if gaussian_filter_cython:
-        res_gauss_cy = medir_tiempo(gaussian_filter_cython, img_gris, "Cython")
+        res_gauss_cy = medir_tiempo(gaussian_filter_cython, img_gris.astype("uint8"), "Cython")
     print("-" * 30)
 
     # Sobel
@@ -43,7 +44,12 @@ def main():
     res_sobel_py = medir_tiempo(sobel_filter_pure_python, img_list, "Pure Python")
     res_sobel_np = medir_tiempo(sobel_filter_numpy, img_gris, "NumPy")
     if sobel_filter_cython:
-        res_sobel_cy = medir_tiempo(sobel_filter_cython, img_gris, "Cython")
+        try:
+            # Primero intentamos con float32 (es el estándar más común en HPC para ahorrar memoria)
+            res_sobel_cy = medir_tiempo(sobel_filter_cython, img_gris.astype("float32"), "Cython")
+        except ValueError:
+            # Si falla, intentamos con int32
+            res_sobel_cy = medir_tiempo(sobel_filter_cython, img_gris.astype("int32"), "Cython")    
     print("-" * 30)
 
     # Median
@@ -51,7 +57,7 @@ def main():
     res_median_py = medir_tiempo(median_filter_pure_python, img_list, "Pure Python")
     res_median_np = medir_tiempo(median_filter_numpy, img_gris, "NumPy")
     if median_filter_cython:
-        res_median_cy = medir_tiempo(median_filter_cython, img_gris, "Cython")
+        res_median_cy = medir_tiempo(median_filter_cython, img_gris.astype("uint8"), "Cython")
     print("-" * 30)
 
     # --- GUARDAR Y MOSTRAR RESULTADOS (Usaremos los de NumPy/Cython como ejemplo) ---
